@@ -80,6 +80,16 @@ def load_model(hparams):
 
     return model
 
+def load_model_cpu(hparams):
+    model = Tacotron2(hparams)
+    if hparams.fp16_run:
+        model.decoder.attention_layer.score_mask_value = finfo('float16').min
+
+    if hparams.distributed_run:
+        model = apply_gradient_allreduce(model)
+
+    return model
+
 
 def warm_start_model(checkpoint_path, model, ignore_layers):
     assert os.path.isfile(checkpoint_path)
